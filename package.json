@@ -1,0 +1,48 @@
+{
+  "name": "docker-test",
+  "displayName": "Homebridge UI",
+  "version": "0.0.0",
+  "description": "Homebridge Regression Testing within Docker",
+  "license": "MIT",
+  "author": "NorthernMan54",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/NorthernMan54/docker-test.git"
+  },
+  "bugs": {
+    "url": "https://github.com/NorthernMan54/docker-test/issues"
+  },
+
+  "bin": {
+  },
+  "engines": {
+    "node": "^18.50 || ^20 || ^21"
+  },
+  "scripts": {
+    "check": "npm install && npm outdated",
+    "watch": "concurrently \"npm run watch:ui\" \"npm run watch:server\"",
+    "watch:server": "nodemon",
+    "watch:ui": "npm run start --prefix ui",
+    "build": "npm run build:server && npm run build:ui",
+    "build:server": "rimraf dist && tsc -p tsconfig.build.json && npm run webpack",
+    "build:ui": "npm run build --prefix ui",
+    "start": "ts-node -r tsconfig-paths/register src/main.ts",
+    "serve": "npm run watch",
+    "lint": "npm run lint:server && npm run lint:ui",
+    "lint:server": "eslint \"{src,test}/**/*.ts\" --max-warnings=0",
+    "lint:ui": "npm run lint --prefix ui",
+    "webpack": "webpack --config webpack.config.js",
+    "install:ui": "npm install --prefix ui",
+    "test": "jest --forceExit --detectOpenHandles --verbose=true --silent --config ./test/jest-e2e.json",
+    "test-coverage": "jest --coverage --forceExit --detectOpenHandles --verbose=true --silent --config ./test/jest-e2e.json",
+    "prepublishOnly": "npm i --package-lock-only && npm run lint && npm run build",
+    "upgrade-install": "./upgrade-install.sh"
+  },
+  "dependencies": {
+
+  },
+  "devDependencies": {
+  },
+  "keywords": [
+  ]
+}
