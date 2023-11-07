@@ -1,0 +1,9 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": "../",
+  "testEnvironment": "node",
+  "testRegex": ".js$",
+  "testTimeout": 10000,
+  "collectCoverageFrom": ["**/*.ts"],
+  "coveragePathIgnorePatterns": ["/ui/", "/test/", "/dist/", "/scripts/"]
+}
