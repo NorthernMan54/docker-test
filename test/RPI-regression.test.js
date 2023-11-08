@@ -9,7 +9,7 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - RPI', (O
     beforeAll(async () => {
 
       var DOCKERFILE = 'Dockerfile.debian';
-      var BASE_IMAGE = 'balenalib/amd64-debian:' + OS_VERSION;
+      var BASE_IMAGE = 'balenalib/raspberry-pi-debian:' + OS_VERSION;
       var QEMU_ARCH = 'arm';
 
 
