@@ -18,7 +18,7 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - RPI', (O
       await dockerRunner('docker run --rm -d --name ' + CONTAINER + ' --net=host --tmpfs /tmp --tmpfs /run --privileged -v ' + process.cwd() + ':/image ' + CONTAINER + '-test');
 
       await dockerUntil('docker exec -i ' + CONTAINER + ' bash -c ', 120000, 'ps -ef | grep journald | grep systemd | grep -v bash');
-
+      await sleep(5000);
       await dockerRunner('docker exec ' + CONTAINER + ' sudo hb-service start');
 
       await dockerUntil('docker exec ' + CONTAINER + ' hb-service status');
@@ -182,7 +182,7 @@ async function dockerUntil(command, timeout = 120000, subcommand = '') {
     result = await dockerRunner(command, timeout, subcommand);
     //    console.log('dockerUntil:', command, result.status);
     count++;
-    sleep(1000);
+    await sleep(5000);
     if (count > 1000) {
       console.log(command);
       console.log('ERROR: ', 'dockerUntil TIMEOUT')
