@@ -44,5 +44,6 @@ RUN curl -sSfL https://repo.homebridge.io/KEY.gpg | sudo gpg --dearmor | sudo te
 RUN echo "deb [signed-by=/usr/share/keyrings/homebridge.gpg] https://repo.homebridge.io stable main" | sudo tee /etc/apt/sources.list.d/homebridge.list > /dev/null
 RUN sudo apt-get update
 RUN sudo apt-get install homebridge wget
+RUN chown -R homebridge: /var/lib/homebridge /opt/homebridge
 
 CMD ["bash", "sudo hb-service start"]
