@@ -20,6 +20,7 @@ if [ $RUNNING -ne 0 ]; then
 	docker rm $(docker ps -a -q)
 fi
 
+docker run --rm --privileged multiarch/qemu-user-static:register --reset
 docker build -f docker/$DOCKERFILE --build-arg BASE_IMAGE=${BASE_IMAGE} --build-arg QEMU_ARCH=${QEMU_ARCH} -t x86-$VERSION-test .
 docker run --rm -d --name x86-$VERSION --net=host --tmpfs /tmp --tmpfs /run --privileged -v $(pwd):/image x86-$VERSION-test 
 echo
@@ -31,3 +32,5 @@ echo
 until docker exec x86-$VERSION hb-service status; do sleep 10; done
 echo 'To see the logs run'
 echo docker exec x86-$VERSION hb-service logs
+echo 'To see the console'
+echo docker exec -it x86-$VERSION bash

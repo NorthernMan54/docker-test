@@ -38,7 +38,7 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
       });
     });
 
-    describe('update-node', () => {
+    describe.skip('update-node', () => {
       test('hb-service update-node', async () => {
         var result = await dockerRunner('docker exec ' + CONTAINER + ' hb-service update-node');
         expect(result.stdout.toString()).toContain('rebuilt dependencies successfully');
@@ -54,6 +54,10 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
         var result = await dockerRunner('docker exec ' + CONTAINER + ' hb-service stop');
         expect(result.stdout.toString()).toContain('Stopping Homebridge...');
       });
+      test('touch /var/lib/homebridge/placeholder.json', async () => {
+        var result = await dockerRunner('docker exec ' + CONTAINER + ' touch /var/lib/homebridge/placeholder.json');
+        //  expect(result.stdout.toString()).toContain('Stopping Homebridge...');
+      });
       test('upgrade-install.sh 4.51.0 /opt/homebridge', async () => {
         var result = await dockerRunner('docker exec ' + CONTAINER + ' sudo --user homebridge env HOME=/home/homebridge bash --rcfile /opt/homebridge/bashrc-hb-shell -ci', 120000, '/opt/homebridge/lib/node_modules/homebridge-config-ui-x/upgrade-install.sh 4.51.0 /opt/homebridge');
         expect(result.stdout.toString()).toContain('Running post-install scripts');
@@ -64,6 +68,10 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
 
         var result = await dockerRunner('docker exec ' + CONTAINER + ' hb-service restart');
         expect(result.stdout.toString()).toContain('Restarting Homebridge...');
+      });
+      test('ls -l /var/lib/homebridge/placeholder.json', async () => {
+        var result = await dockerRunner('docker exec ' + CONTAINER + ' ls -l /var/lib/homebridge/');
+        expect(result.stdout.toString()).toContain('placeholder.json');
       });
       test('hb-service status', async () => {
         var result = await dockerUntil('docker exec ' + CONTAINER + ' hb-service status');

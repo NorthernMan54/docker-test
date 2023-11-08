@@ -27,12 +27,12 @@ getconf GNU_LIBC_VERSION
 glibc 2.28
 ```
 
-## Ubuntu Buster - ./runX86Buster.sh
+## Ubuntu Buster - ./runX86.sh
 
 This docker images creates a X86_64 Buster environment and sets up / configures homebridge via the current homebridge APT package.  Startup time takes about 3-4 minutes, and you can access homebridge via the UI.
 
 ```
-RETTY_NAME="Debian GNU/Linux 10 (buster)"
+PRETTY_NAME="Debian GNU/Linux 10 (buster)"
 NAME="Debian GNU/Linux"
 VERSION_ID="10"
 VERSION="10 (buster)"
