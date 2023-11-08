@@ -157,13 +157,13 @@ async function dockerRunner(command, timeout = 120000, subcommand = '') {
     maxBuffer: 100048577
   })
   if (result.error) {
-    console.log(cmd, args);
+    console.log(command, subcommand);
     console.log('ERROR: ', result.error.toString())
     console.log(result.stdout.toString());
     console.log(result.stderr.toString());
     throw new Error(result.error);
   } else if (result.status === 125) {
-    console.log(cmd, args);
+    console.log(command, subcommand);
     console.log('ERROR: ', result.status)
     throw new Error(command + ', status: ' + result.status);
   } else if (result.status) {
