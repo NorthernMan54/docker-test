@@ -85,7 +85,7 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - RPI', (O
         expect(result.stdout.toString()).toContain('Stopping Homebridge...');
       });
       test('wget homebridge_1.2.1_amd64.deb', async () => {
-        var result = await dockerRunner('docker exec ' + CONTAINER + ' wget -q https://github.com/NorthernMan54/homebridge-apt-pkg/releases/download/1.2.1/homebridge_1.2.1_amd64.deb');
+        var result = await dockerRunner('docker exec ' + CONTAINER + ' wget -q https://github.com/NorthernMan54/homebridge-apt-pkg/releases/download/1.2.1/homebridge_1.2.1_armhf.deb');
         //    expect(result.stdout.toString()).toContain('Restarting Homebridge...');
       });
       test('dpkg -i homebridge_1.2.1_amd64.deb', async () => {

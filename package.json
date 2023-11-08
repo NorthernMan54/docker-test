@@ -14,7 +14,7 @@
   },
   "bin": {},
   "engines": {
-    "node": "^18.50 || ^20 || ^21"
+    "node": "^18.15 || ^20 || ^21"
   },
   "scripts": {
     "check": "npm install && npm outdated",
