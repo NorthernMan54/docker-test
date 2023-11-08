@@ -166,7 +166,7 @@ async function dockerRunner(command, timeout = 120000, subcommand = '') {
     maxBuffer: 100048577
   })
   if (result.error) {
-    if (result.error.toString() === 'Error: spawnSync docker ETIMEDOUT' && command.includes(' logs ')) {
+    if (result.error.toString().includes('Error: spawnSync docker ETIMEDOUT') && command.includes(' logs ')) {
       return result;
     } else {
       console.log(command, subcommand);
