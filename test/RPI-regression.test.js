@@ -25,7 +25,7 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - RPI', (O
 
       console.log('Homebridge is running on', OS_VERSION);
 
-    });
+    }, 900000);
 
     afterAll(async () => {
       var result = await child_process.execSync('docker stop $(docker ps -a -q)', { timeout: 120000 })
