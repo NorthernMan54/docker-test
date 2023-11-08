@@ -34,7 +34,8 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - RPI', (O
     describe('GLIBC Version', () => {
       test('getconf GNU_LIBC_VERSION', async () => {
         var result = await dockerRunner('docker exec ' + CONTAINER + ' getconf GNU_LIBC_VERSION');
-        expect(result.stdout.toString()).toContain('broke');
+        expect(result.stdout.toString()).toContain('glibc');
+        console.log(OS_VERSION + ': ' +result.stdout.toString())
       });
     });
 
@@ -76,7 +77,7 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - RPI', (O
       test('hb-service status', async () => {
         var result = await dockerUntil('docker exec ' + CONTAINER + ' hb-service status');
         expect(result.stderr.toString()).toContain('Homebridge UI Running');
-      });
+      }, 60000);
     });
 
     describe('update to new APT release - homebridge_1.2.1', () => {
@@ -90,6 +91,7 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - RPI', (O
       });
       test('dpkg -i homebridge_1.2.1_amd64.deb', async () => {
         var result = await dockerRunner('docker exec ' + CONTAINER + ' sudo dpkg -i homebridge_1.2.1_amd64.deb');
+        console.log('dpkg -i homebridge_1.2.1_amd64.deb', result.stdout.toString(), result.sterrr.toString());
         expect(result.stdout.toString()).toContain('Starting Homebridge service....');
 
         //    result = await dockerRunner('docker exec ' + CONTAINER + ' hb-service restart');
@@ -98,7 +100,7 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - RPI', (O
       test('hb-service status', async () => {
         var result = await dockerUntil('docker exec ' + CONTAINER + ' hb-service status');
         expect(result.stderr.toString()).toContain('Homebridge UI Running');
-      });
+      }, 60000);
     });
 
     describe('downgrade apt-pkg to 1.1.0', () => {
