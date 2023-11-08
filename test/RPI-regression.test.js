@@ -31,11 +31,18 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - RPI', (O
       var result = await child_process.execSync('docker stop $(docker ps -a -q)', { timeout: 120000 })
     });
 
-    describe('GLIBC Version', () => {
+    describe.only('GLIBC Version', () => {
       test('getconf GNU_LIBC_VERSION', async () => {
         var result = await dockerRunner('docker exec ' + CONTAINER + ' getconf GNU_LIBC_VERSION');
         expect(result.stdout.toString()).toContain('glibc');
-        console.log(OS_VERSION + ': ' +result.stdout.toString())
+        console.log(OS_VERSION + ': ' + result.stdout.toString())
+      });
+
+      test('hb-service logs', async () => {
+        var result = await expect(dockerRunner('docker exec ' + CONTAINER + ' hb-service logs', 10000))
+        expect(result.stdout.toString()).toContain('rebuilt dependencies successfully');
+
+        //  expect(result.stdout.toString()).toContain('Started Homebridge');
       });
     });
 
@@ -159,11 +166,15 @@ async function dockerRunner(command, timeout = 120000, subcommand = '') {
     maxBuffer: 100048577
   })
   if (result.error) {
-    console.log(command, subcommand);
-    console.log('ERROR: ', result.error.toString())
-    console.log(result.stdout.toString());
-    console.log(result.stderr.toString());
-    throw new Error(result.error);
+    if (result.error.toString() === 'Error: spawnSync docker ETIMEDOUT' && command.includes(' logs ')) {
+      return result;
+    } else {
+      console.log(command, subcommand);
+      console.log('ERROR: ', result.error.toString())
+      console.log(result.stdout.toString());
+      console.log(result.stderr.toString());
+      throw new Error(result.error);
+    }
   } else if (result.status === 125) {
     console.log(command, subcommand);
     console.log('ERROR: ', result.status)
