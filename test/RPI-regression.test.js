@@ -21,9 +21,17 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - RPI', (O
       await sleep(5000);
       await dockerRunner('docker exec ' + CONTAINER + ' sudo hb-service start');
 
-      await dockerUntil('docker exec ' + CONTAINER + ' hb-service status');
+      var result = await dockerUntil('docker exec ' + CONTAINER + ' hb-service status');
+      if (result.stdout)
+        console.log('STDOUT:', result.stdout.toString())
+      if (result.stderr)
+        console.log('STDERR:', result.stderr.toString())
 
-      console.log(await dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log').stdout.toString())
+      result = await dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log')
+      if (result.stdout)
+        console.log('STDOUT:', result.stdout.toString())
+      if (result.stderr)
+        console.log('STDERR:', result.stderr.toString())
 
       console.log('Homebridge is running on', OS_VERSION);
 
@@ -42,6 +50,11 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - RPI', (O
 
       test('hb-service logs', async () => {
         var result = await dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log')
+        result = await dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log')
+        if (result.stdout)
+          console.log('STDOUT:', result.stdout.toString())
+        if (result.stderr)
+          console.log('STDERR:', result.stderr.toString())
         expect(result.stdout.toString()).toContain('rebuilt dependencies successfully');
 
         //  expect(result.stdout.toString()).toContain('Started Homebridge');
