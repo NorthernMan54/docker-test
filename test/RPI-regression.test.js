@@ -192,10 +192,8 @@ async function dockerRunner(command, timeout = 120000, subcommand = '') {
     if (result.error.toString().includes('Error: spawnSync docker ETIMEDOUT') && command.includes(' logs')) {
       return result;
     } else {
-      console.log(result.error.toString().includes('Error: spawnSync docker ETIMEDOUT'))
-      console.log(command.includes(' logs'))
       console.log(command, subcommand);
-      console.log('ERROR: ', result.error.toString())
+      console.trace('ERROR: ', result.error.toString())
       console.log(result.stdout.toString());
       console.log(result.stderr.toString());
       throw new Error(result.error);
@@ -223,7 +221,7 @@ async function dockerUntil(command, timeout = 120000, subcommand = '') {
     await sleep(5000);
     if (count > 1000) {
       console.log(command);
-      console.log('ERROR: ', 'dockerUntil TIMEOUT')
+      console.trace('ERROR: ', 'dockerUntil TIMEOUT')
       throw new Error('dockerUntil TIMEOUT');
     }
   }
