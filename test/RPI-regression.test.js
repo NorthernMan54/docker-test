@@ -22,22 +22,23 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - RPI', (O
       await dockerRunner('docker exec ' + CONTAINER + ' sudo hb-service start');
 
       var result = await dockerUntil('docker exec ' + CONTAINER + ' hb-service status');
-      if (result.stdout)
-        console.log('STDOUT:', result.stdout.toString())
-      if (result.stderr)
-        console.log('STDERR:', result.stderr.toString())
+//      if (result.stdout)
+//        console.log('STDOUT:', result.stdout.toString())
+//      if (result.stderr)
+//        console.log('STDERR:', result.stderr.toString())
 
-      result = await dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log')
-      if (result.stdout)
-        console.log('STDOUT:', result.stdout.toString())
-      if (result.stderr)
-        console.log('STDERR:', result.stderr.toString())
+//      result = await dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log')
+//      if (result.stdout)
+//        console.log('STDOUT:', result.stdout.toString())
+//      if (result.stderr)
+//        console.log('STDERR:', result.stderr.toString())
 
       console.log('Homebridge is running on', OS_VERSION);
 
     }, 900000);
 
     afterAll(async () => {
+      console.log('Homebridge stopping', OS_VERSION);
       var result = await child_process.execSync('docker stop $(docker ps -a -q)', { timeout: 120000 })
     });
 
@@ -50,14 +51,7 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - RPI', (O
 
       test('hb-service logs', async () => {
         var result = await dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log')
-        result = await dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log')
-        if (result.stdout)
-          console.log('STDOUT:', result.stdout.toString())
-        if (result.stderr)
-          console.log('STDERR:', result.stderr.toString())
-        expect(result.stdout.toString()).toContain('rebuilt dependencies successfully');
-
-        //  expect(result.stdout.toString()).toContain('Started Homebridge');
+        expect(result.stdout.toString()).toMatch(/Homebridge.*HAP.*Homebridge.* is running on port/);
       });
     });
 
@@ -69,6 +63,10 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - RPI', (O
       test('hb-service status', async () => {
         var result = await dockerUntil('docker exec ' + CONTAINER + ' hb-service status');
         expect(result.stderr.toString()).toContain('Homebridge UI Running');
+      });
+      test('hb-service logs', async () => {
+        var result = await dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log')
+        expect(result.stdout.toString()).toMatch(/Homebridge.*HAP.*Homebridge.* is running on port/);
       });
     });
 
@@ -100,6 +98,10 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - RPI', (O
         var result = await dockerUntil('docker exec ' + CONTAINER + ' hb-service status');
         expect(result.stderr.toString()).toContain('Homebridge UI Running');
       }, 60000);
+      test('hb-service logs', async () => {
+        var result = await dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log')
+        expect(result.stdout.toString()).toMatch(/Homebridge Config UI X.*is listening on :: port/);
+      });
     });
 
     describe('update to new APT release - homebridge_1.2.1', () => {
@@ -123,6 +125,10 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - RPI', (O
         var result = await dockerUntil('docker exec ' + CONTAINER + ' hb-service status');
         expect(result.stderr.toString()).toContain('Homebridge UI Running');
       }, 60000);
+      test('hb-service logs', async () => {
+        var result = await dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log')
+        expect(result.stdout.toString()).toMatch(/Homebridge Config UI X.*is listening on :: port/);
+      });
     });
 
     describe('downgrade apt-pkg to 1.1.0', () => {
@@ -155,6 +161,10 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - RPI', (O
       test('ls -l /var/lib/homebridge/placeholder.json', async () => {
         var result = await dockerRunner('docker exec ' + CONTAINER + ' ls -l /var/lib/homebridge/');
         expect(result.stdout.toString()).toContain('placeholder.json');
+      });
+      test('hb-service logs', async () => {
+        var result = await dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log')
+        expect(result.stdout.toString()).toMatch(/Homebridge Config UI X.*is listening on :: port/);
       });
     });
 
