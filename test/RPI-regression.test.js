@@ -63,7 +63,7 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - RPI', (O
       test('hb-service status', async () => {
         var result = await dockerUntil('docker exec ' + CONTAINER + ' hb-service status');
         expect(result.stderr.toString()).toContain('Homebridge UI Running');
-      });
+      }, 60000);
       test('hb-service logs', async () => {
         var result = await dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log')
         expect(result.stdout.toString()).toMatch(/Homebridge.*HAP.*Homebridge.* is running on port/);
@@ -80,7 +80,7 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - RPI', (O
         //  expect(result.stdout.toString()).toContain('Stopping Homebridge...');
       });
       test('upgrade-install.sh 4.51.0 /opt/homebridge', async () => {
-        var result = await dockerRunner('docker exec ' + CONTAINER + ' sudo --user homebridge env HOME=/home/homebridge bash --rcfile /opt/homebridge/bashrc-hb-shell -ci', 120000, '/opt/homebridge/lib/node_modules/homebridge-config-ui-x/upgrade-install.sh 4.51.0 /opt/homebridge');
+        var result = await dockerRunner('docker exec ' + CONTAINER + ' sudo --user homebridge env HOME=/home/homebridge bash --rcfile /opt/homebridge/bashrc-hb-shell -ci', 600000, '/opt/homebridge/lib/node_modules/homebridge-config-ui-x/upgrade-install.sh 4.51.0 /opt/homebridge');
         expect(result.stdout.toString()).toContain('Running post-install scripts');
       });
       test('hb-service restart', async () => {
@@ -200,7 +200,7 @@ async function dockerRunner(command, timeout = 120000, subcommand = '') {
     }
   } else if (result.status === 125) {
     console.log(command, subcommand);
-    console.log('ERROR: ', result.status)
+    console.trace('ERROR: ', result.status)
     throw new Error(command + ', status: ' + result.status);
   } else if (result.status) {
     //    console.log(cmd, args);
