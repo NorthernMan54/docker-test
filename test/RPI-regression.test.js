@@ -42,7 +42,7 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - RPI', (O
       var result = await child_process.execSync('docker stop $(docker ps -a -q)', { timeout: 120000 })
     });
 
-    describe.only('GLIBC Version', () => {
+    describe('GLIBC Version', () => {
       test('getconf GNU_LIBC_VERSION', async () => {
         var result = await dockerRunner('docker exec ' + CONTAINER + ' getconf GNU_LIBC_VERSION');
         expect(result.stdout.toString()).toContain('glibc');
@@ -55,7 +55,7 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - RPI', (O
       });
     });
 
-    describe.skip('update-node', () => {
+    describe('update-node', () => {
       test('hb-service update-node', async () => {
         var result = await dockerRunner('docker exec ' + CONTAINER + ' hb-service update-node');
         expect(result.stdout.toString()).toContain('rebuilt dependencies successfully');
