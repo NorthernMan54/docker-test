@@ -23,6 +23,8 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - RPI', (O
 
       await dockerUntil('docker exec ' + CONTAINER + ' hb-service status');
 
+      console.log(await expect(dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log')))
+      
       console.log('Homebridge is running on', OS_VERSION);
 
     }, 900000);
