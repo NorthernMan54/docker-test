@@ -39,7 +39,7 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - RPI', (O
       });
 
       test('hb-service logs', async () => {
-        var result = await expect(dockerRunner('docker exec ' + CONTAINER + ' hb-service logs', 10000))
+        var result = await expect(dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log'))
         expect(result.stdout.toString()).toContain('rebuilt dependencies successfully');
 
         //  expect(result.stdout.toString()).toContain('Started Homebridge');
@@ -145,10 +145,8 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - RPI', (O
 
     describe('check logs', () => {
       test('hb-service logs', async () => {
-        var result = await expect(dockerRunner('docker exec ' + CONTAINER + ' hb-service logs', 10000))
-          .rejects
-          .toThrow('Error: spawnSync docker ETIMEDOUT');
-
+        var result = await expect(dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log'))
+        expect(result.stdout.toString()).toContain('Homebridge UI Running');
         //  expect(result.stdout.toString()).toContain('Started Homebridge');
       });
     });
