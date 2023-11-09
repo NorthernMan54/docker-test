@@ -12,7 +12,7 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - RPI', (O
       var BASE_IMAGE = 'balenalib/raspberry-pi-debian:' + OS_VERSION;
       var QEMU_ARCH = 'arm';
 
-
+      console.log('Homebridge starting ', OS_VERSION);
       await dockerRunner('docker build -f docker/' + DOCKERFILE + ' --build-arg BASE_IMAGE=' + BASE_IMAGE + ' --build-arg QEMU_ARCH=' + QEMU_ARCH + ' -t ' + CONTAINER + '-test .', 900000);
 
       await dockerRunner('docker run --rm -d --name ' + CONTAINER + ' --net=host --tmpfs /tmp --tmpfs /run --privileged -v ' + process.cwd() + ':/image ' + CONTAINER + '-test');
