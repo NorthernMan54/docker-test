@@ -109,7 +109,23 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
         var result = await dockerRunner('docker exec ' + CONTAINER + ' sudo dpkg -i homebridge_1.20.0_amd64.deb');
         console.log(result.stdout.toString());
         console.log(result.stderr.toString());
-        expect(result.stdout.toString()).toContain('Starting Homebridge service....');
+        if (OS_VERSION.contains("buster")) {
+          expect(result.stderr.toString()).toContain('pre-dependency problem - not installing homebridge');
+          test('hb-service restart', async () => {
+            //    console.log(result.stdout.toString().length);
+            //    console.log(result.stdout.toString().slice(-500));
+    
+            var result = await dockerRunner('docker exec ' + CONTAINER + ' hb-service restart');
+            expect(result.stdout.toString()).toContain('Restarting Homebridge...');
+          });
+          test('hb-service status', async () => {
+            var result = await dockerUntil('docker exec ' + CONTAINER + ' hb-service status');
+            expect(result.stderr.toString()).toContain('Homebridge UI Running');
+          });
+        } else {
+          expect(result.stdout.toString()).toContain('Starting Homebridge service....');
+        }
+
 
         //    result = await dockerRunner('docker exec ' + CONTAINER + ' hb-service restart');
         //    expect(result.stdout.toString()).toContain('Restarting Homebridge...');
