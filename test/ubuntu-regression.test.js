@@ -12,6 +12,7 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
       var BASE_IMAGE = 'balenalib/amd64-debian:' + OS_VERSION;
       var QEMU_ARCH = 'x86_64';
 
+      console.log('Starting Homebridge on', OS_VERSION);
 
       await dockerRunner('docker build -f docker/' + DOCKERFILE + ' --build-arg BASE_IMAGE=' + BASE_IMAGE + ' --build-arg QEMU_ARCH=' + QEMU_ARCH + ' -t ' + CONTAINER + '-test .');
 
@@ -28,6 +29,8 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
     }, 120);
 
     afterAll(async () => {
+
+      console.log('Stopping Homebridge on', OS_VERSION);
       var result = await child_process.execSync('docker stop $(docker ps -a -q)', { timeout: 120000 })
     });
 
@@ -42,6 +45,10 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
       test('hb-service update-node', async () => {
         var result = await dockerRunner('docker exec ' + CONTAINER + ' hb-service update-node');
         expect(result.stdout.toString()).toContain('rebuilt dependencies successfully');
+      });
+      test('hb-service logs', async () => {
+        var result = await dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log')
+        expect(result.stdout.toString()).toMatch(/Homebridge.*HAP.*Homebridge.* is running on port/);
       });
       test('hb-service status', async () => {
         var result = await dockerUntil('docker exec ' + CONTAINER + ' hb-service status');
@@ -79,13 +86,13 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
       });
     });
 
-    describe('update to new APT release - homebridge_1.2.1', () => {
+    describe('update to new APT release - homebridge_1.20.0', () => {
       test('hb-service stop', async () => {
         var result = await dockerRunner('docker exec ' + CONTAINER + ' hb-service stop');
         expect(result.stdout.toString()).toContain('Stopping Homebridge...');
       });
       test('wget homebridge_1.2.1_amd64.deb', async () => {
-        var result = await dockerRunner('docker exec ' + CONTAINER + ' wget -q https://github.com/NorthernMan54/homebridge-apt-pkg/releases/download/1.2.1/homebridge_1.2.1_amd64.deb');
+        var result = await dockerRunner('docker exec ' + CONTAINER + ' wget -q https://github.com/NorthernMan54/homebridge-apt-pkg/releases/download/1.20.0/homebridge_1.20.0_amd64.deb');
         //    expect(result.stdout.toString()).toContain('Restarting Homebridge...');
       });
       test('dpkg -i homebridge_1.2.1_amd64.deb', async () => {
@@ -98,6 +105,10 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
       test('hb-service status', async () => {
         var result = await dockerUntil('docker exec ' + CONTAINER + ' hb-service status');
         expect(result.stderr.toString()).toContain('Homebridge UI Running');
+      });
+      test('hb-service logs', async () => {
+        var result = await dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log')
+        expect(result.stdout.toString()).toMatch(/Homebridge.*HAP.*Homebridge.* is running on port/);
       });
     });
 
@@ -132,15 +143,9 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
         var result = await dockerRunner('docker exec ' + CONTAINER + ' ls -l /var/lib/homebridge/');
         expect(result.stdout.toString()).toContain('placeholder.json');
       });
-    });
-
-    describe('check logs', () => {
       test('hb-service logs', async () => {
-        var result = await expect(dockerRunner('docker exec ' + CONTAINER + ' hb-service logs', 10000))
-          .rejects
-          .toThrow('Error: spawnSync docker ETIMEDOUT');
-
-        //  expect(result.stdout.toString()).toContain('Started Homebridge');
+        var result = await dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log')
+        expect(result.stdout.toString()).toMatch(/Homebridge.*HAP.*Homebridge.* is running on port/);
       });
     });
   });
@@ -158,13 +163,13 @@ async function dockerRunner(command, timeout = 120000, subcommand = '') {
   })
   if (result.error) {
     console.log(cmd, args);
-    console.log('ERROR: ', result.error.toString())
+    console.trace('ERROR: ', result.error.toString())
     console.log(result.stdout.toString());
     console.log(result.stderr.toString());
     throw new Error(result.error);
   } else if (result.status === 125) {
     console.log(cmd, args);
-    console.log('ERROR: ', result.status)
+    console.trace('ERROR: ', result.status)
     throw new Error(command + ', status: ' + result.status);
   } else if (result.status) {
     //    console.log(cmd, args);
@@ -185,7 +190,7 @@ async function dockerUntil(command, timeout = 120000, subcommand = '') {
     sleep(1000);
     if (count > 1000) {
       console.log(command);
-      console.log('ERROR: ', 'dockerUntil TIMEOUT')
+      console.trace('ERROR: ', 'dockerUntil TIMEOUT')
       throw new Error('dockerUntil TIMEOUT');
     }
   }
