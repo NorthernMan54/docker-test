@@ -37,7 +37,13 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
     describe('GLIBC Version', () => {
       test('getconf GNU_LIBC_VERSION', async () => {
         var result = await dockerRunner('docker exec ' + CONTAINER + ' getconf GNU_LIBC_VERSION');
-        expect(result.stdout.toString()).toContain('broke');
+        expect(result.stdout.toString()).toContain('glibc');
+        console.log(OS_VERSION + ': ' + result.stdout.toString())
+      });
+      
+      test('hb-service logs', async () => {
+        var result = await dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log')
+        expect(result.stdout.toString()).toMatch(/Homebridge.*HAP.*Homebridge.* is running on port/);
       });
     });
 
@@ -96,7 +102,7 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
         //    expect(result.stdout.toString()).toContain('Restarting Homebridge...');
       });
       test('dpkg -i homebridge_1.2.1_amd64.deb', async () => {
-        var result = await dockerRunner('docker exec ' + CONTAINER + ' sudo dpkg -i homebridge_1.2.1_amd64.deb');
+        var result = await dockerRunner('docker exec ' + CONTAINER + ' sudo dpkg -i homebridge_1.20.0_amd64.deb');
         expect(result.stdout.toString()).toContain('Starting Homebridge service....');
 
         //    result = await dockerRunner('docker exec ' + CONTAINER + ' hb-service restart');
