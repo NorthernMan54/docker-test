@@ -40,7 +40,11 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
         expect(result.stdout.toString()).toContain('glibc');
         console.log(OS_VERSION + ': ' + result.stdout.toString())
       });
-      
+
+      test('hb-service logs', async () => {
+        var result = await dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log')
+        expect(result.stdout.toString()).toMatch(/Homebridge Config UI X.*is listening on :: port/);
+      });
       test('hb-service logs', async () => {
         var result = await dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log')
         expect(result.stdout.toString()).toMatch(/Homebridge.*HAP.*Homebridge.* is running on port/);
@@ -103,10 +107,16 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
       });
       test('dpkg -i homebridge_1.2.1_amd64.deb', async () => {
         var result = await dockerRunner('docker exec ' + CONTAINER + ' sudo dpkg -i homebridge_1.20.0_amd64.deb');
+        console.log(result.stdout.toString());
+        console.log(result.stderr.toString());
         expect(result.stdout.toString()).toContain('Starting Homebridge service....');
 
         //    result = await dockerRunner('docker exec ' + CONTAINER + ' hb-service restart');
         //    expect(result.stdout.toString()).toContain('Restarting Homebridge...');
+      });
+      test('hb-service logs', async () => {
+        var result = await dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log')
+        expect(result.stdout.toString()).toMatch(/Homebridge.*HAP.*Homebridge.* is running on port/);
       });
       test('hb-service status', async () => {
         var result = await dockerUntil('docker exec ' + CONTAINER + ' hb-service status');
@@ -193,7 +203,7 @@ async function dockerUntil(command, timeout = 120000, subcommand = '') {
     result = await dockerRunner(command, timeout, subcommand);
     //    console.log('dockerUntil:', command, result.status);
     count++;
-    sleep(1000);
+    sleep(10000);
     if (count > 1000) {
       console.log(command);
       console.trace('ERROR: ', 'dockerUntil TIMEOUT')
