@@ -1,6 +1,11 @@
 const child_process = require("child_process");
 const fs = require("fs");
 
+const upgradeInstallVersion = '4.51.0';
+
+const debPackage = 'homebridge_1.20.0_amd64.deb';
+const debDownload = 'https://github.com/NorthernMan54/homebridge-apt-pkg/releases/download/1.20.0/' + debPackage;
+
 jest.setTimeout(30000);
 
 describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (OS_VERSION) => {
@@ -53,7 +58,7 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
       });
     });
 
-    describe.skip('update-node', () => {
+    describe('update-node', () => {
       test('hb-service update-node', async () => {
         var result = await dockerRunner('docker exec ' + CONTAINER + ' hb-service update-node');
         expect(result.stdout.toString()).toContain('rebuilt dependencies successfully');
@@ -68,7 +73,7 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
       });
     });
 
-    describe('update to 4.51.0', () => {
+    describe('update to ' + upgradeInstallVersion, () => {
       test('hb-service stop', async () => {
         var result = await dockerRunner('docker exec ' + CONTAINER + ' hb-service stop');
         expect(result.stdout.toString()).toContain('Stopping Homebridge...');
@@ -77,8 +82,8 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
         var result = await dockerRunner('docker exec ' + CONTAINER + ' touch /var/lib/homebridge/placeholder.json');
         //  expect(result.stdout.toString()).toContain('Stopping Homebridge...');
       });
-      test('upgrade-install.sh 4.51.0 /opt/homebridge', async () => {
-        var result = await dockerRunner('docker exec ' + CONTAINER + ' sudo --user homebridge env HOME=/home/homebridge bash --rcfile /opt/homebridge/bashrc-hb-shell -ci', 120000, '/opt/homebridge/lib/node_modules/homebridge-config-ui-x/upgrade-install.sh 4.51.0 /opt/homebridge');
+      test('upgrade-install.sh ' + upgradeInstallVersion + ' /opt/homebridge', async () => {
+        var result = await dockerRunner('docker exec ' + CONTAINER + ' sudo --user homebridge env HOME=/home/homebridge bash --rcfile /opt/homebridge/bashrc-hb-shell -ci', 120000, '/opt/homebridge/lib/node_modules/homebridge-config-ui-x/upgrade-install.sh ' + upgradeInstallVersion + ' /opt/homebridge');
         expect(result.stdout.toString()).toContain('Running post-install scripts');
       });
       test('hb-service restart', async () => {
@@ -104,15 +109,15 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
         expect(result.stdout.toString()).toContain('Stopping Homebridge...');
       });
       test('wget homebridge_1.20.1_amd64.deb', async () => {
-        var result = await dockerRunner('docker exec ' + CONTAINER + ' wget -q https://github.com/NorthernMan54/homebridge-apt-pkg/releases/download/1.20.0/homebridge_1.20.0_amd64.deb');
+        var result = await dockerRunner('docker exec ' + CONTAINER + ' wget -q ' + debDownload);
         //    expect(result.stdout.toString()).toContain('Restarting Homebridge...');
       });
 
       // Buster can't run 1.20 due to GLIBC 2.28
       if (OS_VERSION.includes("buster")) {
 
-        test('dpkg -i homebridge_1.20.1_amd64.deb', async () => {
-          var result = await dockerRunner('docker exec ' + CONTAINER + ' sudo dpkg -i homebridge_1.20.0_amd64.deb');
+        test('dpkg -i ' + debPackage, async () => {
+          var result = await dockerRunner('docker exec ' + CONTAINER + ' sudo dpkg -i ' + debPackage);
           console.log(result.stdout.toString());
           console.log(result.stderr.toString());
           expect(result.stderr.toString()).toContain('pre-dependency problem - not installing homebridge');
@@ -122,8 +127,8 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
         });
       } else {
 
-        test('dpkg -i homebridge_1.20.1_amd64.deb', async () => {
-          var result = await dockerRunner('docker exec ' + CONTAINER + ' sudo dpkg -i homebridge_1.20.0_amd64.deb');
+        test('dpkg -i ' + debPackage, async () => {
+          var result = await dockerRunner('docker exec ' + CONTAINER + ' sudo dpkg -i ' + debPackage);
           console.log(result.stdout.toString());
           console.log(result.stderr.toString());
           expect(result.stdout.toString()).toContain('Starting Homebridge service....');
