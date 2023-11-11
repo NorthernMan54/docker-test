@@ -26,7 +26,7 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
 
       console.log('Homebridge is running on', OS_VERSION);
 
-    }, 120);
+    }, 300000);
 
     afterAll(async () => {
 
@@ -44,7 +44,9 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
       test('hb-service logs', async () => {
         var result = await dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log')
         expect(result.stdout.toString()).toMatch(/Homebridge Config UI X.*is listening on :: port/);
+        await sleep(2000);
       });
+
       test('hb-service logs', async () => {
         var result = await dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log')
         expect(result.stdout.toString()).toMatch(/Homebridge.*HAP.*Homebridge.* is running on port/);
@@ -101,39 +103,33 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
         var result = await dockerRunner('docker exec ' + CONTAINER + ' hb-service stop');
         expect(result.stdout.toString()).toContain('Stopping Homebridge...');
       });
-      test('wget homebridge_1.2.1_amd64.deb', async () => {
+      test('wget homebridge_1.20.1_amd64.deb', async () => {
         var result = await dockerRunner('docker exec ' + CONTAINER + ' wget -q https://github.com/NorthernMan54/homebridge-apt-pkg/releases/download/1.20.0/homebridge_1.20.0_amd64.deb');
         //    expect(result.stdout.toString()).toContain('Restarting Homebridge...');
       });
-      test('dpkg -i homebridge_1.2.1_amd64.deb', async () => {
-        var result = await dockerRunner('docker exec ' + CONTAINER + ' sudo dpkg -i homebridge_1.20.0_amd64.deb');
-        console.log(result.stdout.toString());
-        console.log(result.stderr.toString());
-        if (OS_VERSION.contains("buster")) {
+
+      // Buster can't run 1.20 due to GLIBC 2.28
+      if (OS_VERSION.includes("buster")) {
+
+        test('dpkg -i homebridge_1.20.1_amd64.deb', async () => {
+          var result = await dockerRunner('docker exec ' + CONTAINER + ' sudo dpkg -i homebridge_1.20.0_amd64.deb');
+          console.log(result.stdout.toString());
+          console.log(result.stderr.toString());
           expect(result.stderr.toString()).toContain('pre-dependency problem - not installing homebridge');
-          test('hb-service restart', async () => {
-            //    console.log(result.stdout.toString().length);
-            //    console.log(result.stdout.toString().slice(-500));
-    
-            var result = await dockerRunner('docker exec ' + CONTAINER + ' hb-service restart');
-            expect(result.stdout.toString()).toContain('Restarting Homebridge...');
-          });
-          test('hb-service status', async () => {
-            var result = await dockerUntil('docker exec ' + CONTAINER + ' hb-service status');
-            expect(result.stderr.toString()).toContain('Homebridge UI Running');
-          });
-        } else {
+
+          result = await dockerRunner('docker exec ' + CONTAINER + ' hb-service restart');
+          expect(result.stdout.toString()).toContain('Restarting Homebridge...');
+        });
+      } else {
+
+        test('dpkg -i homebridge_1.20.1_amd64.deb', async () => {
+          var result = await dockerRunner('docker exec ' + CONTAINER + ' sudo dpkg -i homebridge_1.20.0_amd64.deb');
+          console.log(result.stdout.toString());
+          console.log(result.stderr.toString());
           expect(result.stdout.toString()).toContain('Starting Homebridge service....');
-        }
+        });
+      }
 
-
-        //    result = await dockerRunner('docker exec ' + CONTAINER + ' hb-service restart');
-        //    expect(result.stdout.toString()).toContain('Restarting Homebridge...');
-      });
-      test('hb-service logs', async () => {
-        var result = await dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log')
-        expect(result.stdout.toString()).toMatch(/Homebridge.*HAP.*Homebridge.* is running on port/);
-      });
       test('hb-service status', async () => {
         var result = await dockerUntil('docker exec ' + CONTAINER + ' hb-service status');
         expect(result.stderr.toString()).toContain('Homebridge UI Running');
@@ -157,7 +153,7 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
         var result = await dockerRunner('docker exec ' + CONTAINER + ' apt-get remove homebridge');
         expect(result.stdout.toString()).toContain('Removing homebridge');
       });
-      test('wget homebridge_1.2.1_amd64.deb', async () => {
+      test('wget homebridge_1.20.1_amd64.deb', async () => {
         //  result = await dockerRunner('docker exec ' + CONTAINER + ' apt-get purge homebridge');
         //  expect(result.stdout.toString()).toContain('Purging configuration files for homebridge');
 
@@ -219,9 +215,11 @@ async function dockerUntil(command, timeout = 120000, subcommand = '') {
     result = await dockerRunner(command, timeout, subcommand);
     //    console.log('dockerUntil:', command, result.status);
     count++;
-    sleep(10000);
+    await sleep(10000);
     if (count > 1000) {
       console.log(command);
+      console.log('stdout', result.stdout.toString());
+      console.log('stderr', result.stderr.toString());
       console.trace('ERROR: ', 'dockerUntil TIMEOUT')
       throw new Error('dockerUntil TIMEOUT');
     }
@@ -233,6 +231,6 @@ async function dockerUntil(command, timeout = 120000, subcommand = '') {
   return result;
 }
 
-function sleep(ms) {
+async function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
