@@ -59,10 +59,19 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
     });
 
     describe('update-node', () => {
-      test('hb-service update-node', async () => {
-        var result = await dockerRunner('docker exec ' + CONTAINER + ' hb-service update-node');
-        expect(result.stdout.toString()).toContain('rebuilt dependencies successfully');
-      });
+      if (OS_VERSION.includes("buster")) {
+        test('hb-service update-node fail, buster GLIBC too old', async () => {
+          var result = await dockerRunner('docker exec ' + CONTAINER + ' hb-service update-node');
+          console.log('stdout', result.stdout.toString());
+          console.log('stderr', result.stderr.toString());
+          expect(result.stderr.toString()).toContain('Your version of Linux does not meet the GLIBC version requirements to use this tool to upgrade');
+        });
+      } else {
+        test('hb-service update-node', async () => {
+          var result = await dockerRunner('docker exec ' + CONTAINER + ' hb-service update-node');
+          expect(result.stdout.toString()).toContain('rebuilt dependencies successfully');
+        });
+      }
       test('hb-service logs', async () => {
         var result = await dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log')
         expect(result.stdout.toString()).toMatch(/Homebridge.*HAP.*Homebridge.* is running on port/);
@@ -116,10 +125,8 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
       // Buster can't run 1.20 due to GLIBC 2.28
       if (OS_VERSION.includes("buster")) {
 
-        test('dpkg -i ' + debPackage, async () => {
+        test('dpkg -i ' + debPackage + 'fail, buster OS too old', async () => {
           var result = await dockerRunner('docker exec ' + CONTAINER + ' sudo dpkg -i ' + debPackage);
-          console.log(result.stdout.toString());
-          console.log(result.stderr.toString());
           expect(result.stderr.toString()).toContain('pre-dependency problem - not installing homebridge');
 
           result = await dockerRunner('docker exec ' + CONTAINER + ' hb-service restart');
@@ -129,8 +136,6 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
 
         test('dpkg -i ' + debPackage, async () => {
           var result = await dockerRunner('docker exec ' + CONTAINER + ' sudo dpkg -i ' + debPackage);
-          console.log(result.stdout.toString());
-          console.log(result.stderr.toString());
           expect(result.stdout.toString()).toContain('Starting Homebridge service....');
         });
       }
