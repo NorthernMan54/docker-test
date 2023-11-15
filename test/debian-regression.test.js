@@ -1,7 +1,7 @@
 const child_process = require("child_process");
 const fs = require("fs");
 
-const upgradeInstallVersion = '4.51.0';
+const upgradeInstallVersion = '4.50.6';
 
 const debPackage = 'homebridge_1.20.0_amd64.deb';
 const debDownload = 'https://github.com/NorthernMan54/homebridge-apt-pkg/releases/download/1.20.0/' + debPackage;
@@ -39,16 +39,16 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
       var result = await child_process.execSync('docker stop $(docker ps -a -q)', { timeout: 120000 })
     });
 
-    describe('GLIBC Version', () => {
+    describe('Validate Inital Startup', () => {
       test('getconf GNU_LIBC_VERSION', async () => {
         var result = await dockerRunner('docker exec ' + CONTAINER + ' getconf GNU_LIBC_VERSION');
         expect(result.stdout.toString()).toContain('glibc');
-        console.log(OS_VERSION + ': ' + result.stdout.toString())
+        // console.log(OS_VERSION + ': ' + result.stdout.toString())
       });
 
       test('hb-service logs', async () => {
         var result = await dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log')
-        expect(result.stdout.toString()).toMatch(/Homebridge Config UI X.*is listening on :: port/);
+        expect(result.stdout.toString()).toMatch(/Homebridge.*UI.*is listening on :: port/);
         await sleep(2000);
       });
 
@@ -62,8 +62,6 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
       if (OS_VERSION.includes("buster")) {
         test('hb-service update-node fail, buster GLIBC too old', async () => {
           var result = await dockerRunner('docker exec ' + CONTAINER + ' hb-service update-node');
-          console.log('stdout', result.stdout.toString());
-          console.log('stderr', result.stderr.toString());
           expect(result.stderr.toString()).toContain('Your version of Linux does not meet the GLIBC version requirements to use this tool to upgrade');
         });
       } else {
@@ -105,6 +103,12 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
       test('ls -l /var/lib/homebridge/placeholder.json', async () => {
         var result = await dockerRunner('docker exec ' + CONTAINER + ' ls -l /var/lib/homebridge/');
         expect(result.stdout.toString()).toContain('placeholder.json');
+      });
+      test('hb-service logs', async () => {
+        var result = await dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log')
+        console.log(result.stdout.toString());
+        console.log(result.stderr.toString());
+        expect(result.stdout.toString()).toMatch(/Homebridge.*HAP.*Homebridge.* is running on port/);
       });
       test('hb-service status', async () => {
         var result = await dockerUntil('docker exec ' + CONTAINER + ' hb-service status');
