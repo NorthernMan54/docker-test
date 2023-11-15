@@ -46,19 +46,18 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
         // console.log(OS_VERSION + ': ' + result.stdout.toString())
       });
 
-      test('hb-service logs', async () => {
+      test('Is Homebridge UI Running ?', async () => {
         var result = await dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log')
         expect(result.stdout.toString()).toMatch(/Homebridge.*UI.*is listening on :: port/);
-        await sleep(2000);
       });
 
-      test('hb-service logs', async () => {
+      test('Is Homebridge Running ?', async () => {
         var result = await dockerRunner('docker exec ' + CONTAINER + ' tail -n 100 /var/lib/homebridge/homebridge.log')
         expect(result.stdout.toString()).toMatch(/Homebridge.*HAP.*Homebridge.* is running on port/);
       });
     });
 
-    describe('update-node', () => {
+    describe('Test update-node to latest LTS', () => {
       if (OS_VERSION.includes("buster")) {
         test('hb-service update-node fail, buster GLIBC too old', async () => {
           var result = await dockerRunner('docker exec ' + CONTAINER + ' hb-service update-node');
@@ -80,7 +79,7 @@ describe.each(['buster', 'bullseye', 'bookworm'])('Regression Testing - X86', (O
       });
     });
 
-    describe('update to ' + upgradeInstallVersion, () => {
+    describe('Test UI Update via upgrade-install.sh to ' + upgradeInstallVersion, () => {
       test('hb-service stop', async () => {
         var result = await dockerRunner('docker exec ' + CONTAINER + ' hb-service stop');
         expect(result.stdout.toString()).toContain('Stopping Homebridge...');
@@ -229,7 +228,7 @@ async function dockerUntil(command, timeout = 120000, subcommand = '') {
     result = await dockerRunner(command, timeout, subcommand);
     //    console.log('dockerUntil:', command, result.status);
     count++;
-    await sleep(10000);
+    await sleep(5000);
     if (count > 1000) {
       console.log(command);
       console.log('stdout', result.stdout.toString());
