@@ -5,7 +5,7 @@ set -e
 
 # docker run --rm -v $(pwd):/node-pty raspbian
 
-export VERSION=${1:-buster}
+export VERSION=${1:-bullseye}
 export BASE_IMAGE=balenalib/raspberry-pi-debian:$VERSION
 export QEMU_ARCH=arm
 export DOCKERFILE="Dockerfile.debian"
@@ -31,6 +31,7 @@ until docker exec -it $CONTAINER bash -c 'ps -ef | grep journald | grep systemd 
 docker exec $CONTAINER hb-service start
 echo
 until docker exec $CONTAINER hb-service status; do sleep 10; done
+docker exec $CONTAINER hb-service view
 echo 'To see the logs run'
 echo docker exec $CONTAINER hb-service logs
 echo 'To see the console'
